@@ -151,5 +151,7 @@ wandb*/
 cache/
 outputs/
 
+.vscode/
+
 
 
