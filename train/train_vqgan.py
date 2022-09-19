@@ -5,8 +5,8 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from torch.utils.data import DataLoader, WeightedRandomSampler
 import torch
 from vq_gan_3d.model import VQGAN
-from vq_gan_3d.dataset import MRNetDataset, BRATSDataset, ADNIDataset
-from vq_gan_3d.train.callbacks import ImageLogger, VideoLogger
+from dataset import MRNetDataset, BRATSDataset, ADNIDataset
+from train.callbacks import ImageLogger, VideoLogger
 
 # TO TRAIN:
 # export PYTHONPATH=$PWD in previous folder

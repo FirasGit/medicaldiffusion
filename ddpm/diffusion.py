@@ -1,3 +1,5 @@
+"Largely taken and adapted from https://github.com/lucidrains/video-diffusion-pytorch"
+
 import math
 import copy
 import torch
@@ -957,7 +959,7 @@ class Trainer(object):
     def __init__(
         self,
         diffusion_model,
-        args,
+        cfg,
         folder=None,
         dataset=None,
         *,
@@ -993,7 +995,7 @@ class Trainer(object):
         channels = diffusion_model.channels
         num_frames = diffusion_model.num_frames
 
-        self.args = args
+        self.cfg = cfg
         if dataset:
             self.ds = dataset
         else:

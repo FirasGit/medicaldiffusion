@@ -1,0 +1,8 @@
+name: MRNet
+root_dir: /data/home/firas/Desktop/work/MR_Knie/Data/MRNet/MRNet-v1.0/
+image_channels: 1
+task: acl
+plane: sagittal
+split: train
+
+

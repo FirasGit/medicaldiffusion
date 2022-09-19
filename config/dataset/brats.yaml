@@ -1,0 +1,5 @@
+name: BRATS
+root_dir: ???
+image_channels: 1
+train: True
+img_type: flair
