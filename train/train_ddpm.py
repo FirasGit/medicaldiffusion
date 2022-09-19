@@ -30,7 +30,7 @@ def run(cfg: DictConfig):
         # objective=cfg.objective
     ).cuda()
 
-    train_dataset = get_dataset(cfg)
+    train_dataset, *_ = get_dataset(cfg)
 
     trainer = Trainer(
         diffusion,

@@ -9,6 +9,8 @@ import random
 import math
 import argparse
 
+# TODO: Normalize to -1 and 1
+
 
 def reformat_label(label):
     if label == 1:
@@ -133,16 +135,3 @@ class MRNetDataset(Dataset):
         data = array[self.plane]
         data_org = array_org[self.plane]
         return {'data': data, 'mean_org': data_org.mean(), 'std_org': data_org.std()}
-
-    @staticmethod
-    def add_data_specific_args(parent_parser):
-        parser = argparse.ArgumentParser(
-            parents=[parent_parser], add_help=False)
-        parser.add_argument('--root_dir', type=str,
-                            default='/data/home/firas/Desktop/work/MR_Knie/Data/MRNet/MRNet-v1.0/')
-        parser.add_argument('--batch_size', type=int, default=1)
-        parser.add_argument('--num_workers', type=int, default=8)
-        parser.add_argument('--image_channels', type=int, default=1)
-        parser.add_argument('--task', type=str, default='acl')
-        parser.add_argument('--plane', type=str, default='sagittal')
-        return parser

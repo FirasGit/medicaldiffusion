@@ -1,0 +1,35 @@
+seed: 1234
+batch_size: 30
+num_workers: 30
+
+gpus: 1
+accumulate_grad_batches: 1
+default_root_dir: /data/home/firas/Desktop/work/other_groups/medicaldiffusion/checkpoints/vq_gan/
+default_root_dir_postfix: 
+resume_from_checkpoint:
+max_steps: -1
+precision: 16
+gradient_clip_val: 1.0
+
+
+embedding_dim: 256
+n_codes: 2048
+n_hiddens: 240
+lr: 3e-4
+downsample: [4, 4, 4]
+disc_channels: 64
+disc_layers: 3
+discriminator_iter_start: 50000
+disc_loss_type: hinge
+image_gan_weight: 1.0
+video_gan_weight: 1.0
+l1_weight: 4.0
+gan_feat_weight: 0.0
+perceptual_weight: 0.0
+i3d_feat: False
+restart_thres: 1.0
+no_random_restart: False
+norm_type: group
+padding_type: replicate
+
+

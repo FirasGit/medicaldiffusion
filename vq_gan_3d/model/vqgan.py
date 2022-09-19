@@ -43,55 +43,46 @@ def vanilla_d_loss(logits_real, logits_fake):
 
 
 class VQGAN(pl.LightningModule):
-    def __init__(self, args):
+    def __init__(self, cfg):
         super().__init__()
-        self.args = args
-        self.embedding_dim = args.embedding_dim
-        self.n_codes = args.n_codes
+        self.cfg = cfg
+        self.embedding_dim = cfg.model.embedding_dim
+        self.n_codes = cfg.model.n_codes
 
-        if not hasattr(args, 'padding_type'):
-            args.padding_type = 'replicate'
-        self.encoder = Encoder(args.n_hiddens, args.downsample,
-                               args.image_channels, args.norm_type, args.padding_type)
+        self.encoder = Encoder(cfg.model.n_hiddens, cfg.model.downsample,
+                               cfg.dataset.image_channels, cfg.model.norm_type, cfg.model.padding_type)
         self.decoder = Decoder(
-            args.n_hiddens, args.downsample, args.image_channels, args.norm_type)
+            cfg.model.n_hiddens, cfg.model.downsample, cfg.dataset.image_channels, cfg.model.norm_type)
         self.enc_out_ch = self.encoder.out_channels
         self.pre_vq_conv = SamePadConv3d(
-            self.enc_out_ch, args.embedding_dim, 1, padding_type=args.padding_type)
+            self.enc_out_ch, cfg.model.embedding_dim, 1, padding_type=cfg.model.padding_type)
         self.post_vq_conv = SamePadConv3d(
-            args.embedding_dim, self.enc_out_ch, 1)
+            cfg.model.embedding_dim, self.enc_out_ch, 1)
 
-        self.codebook = Codebook(args.n_codes, args.embedding_dim,
-                                 no_random_restart=args.no_random_restart, restart_thres=args.restart_thres)
+        self.codebook = Codebook(cfg.model.n_codes, cfg.model.embedding_dim,
+                                 no_random_restart=cfg.model.no_random_restart, restart_thres=cfg.model.restart_thres)
 
-        self.gan_feat_weight = args.gan_feat_weight
+        self.gan_feat_weight = cfg.model.gan_feat_weight
         # TODO: Changed batchnorm from sync to normal
         self.image_discriminator = NLayerDiscriminator(
-            args.image_channels, args.disc_channels, args.disc_layers, norm_layer=nn.BatchNorm2d)
+            cfg.dataset.image_channels, cfg.model.disc_channels, cfg.model.disc_layers, norm_layer=nn.BatchNorm2d)
         self.video_discriminator = NLayerDiscriminator3D(
-            args.image_channels, args.disc_channels, args.disc_layers, norm_layer=nn.BatchNorm3d)
+            cfg.dataset.image_channels, cfg.model.disc_channels, cfg.model.disc_layers, norm_layer=nn.BatchNorm3d)
 
-        if args.disc_loss_type == 'vanilla':
+        if cfg.model.disc_loss_type == 'vanilla':
             self.disc_loss = vanilla_d_loss
-        elif args.disc_loss_type == 'hinge':
+        elif cfg.model.disc_loss_type == 'hinge':
             self.disc_loss = hinge_d_loss
 
         self.perceptual_model = LPIPS().eval()
 
-        self.image_gan_weight = args.image_gan_weight
-        self.video_gan_weight = args.video_gan_weight
+        self.image_gan_weight = cfg.model.image_gan_weight
+        self.video_gan_weight = cfg.model.video_gan_weight
 
-        self.perceptual_weight = args.perceptual_weight
+        self.perceptual_weight = cfg.model.perceptual_weight
 
-        self.l1_weight = args.l1_weight
+        self.l1_weight = cfg.model.l1_weight
         self.save_hyperparameters()
-
-    @property
-    def latent_shape(self):
-        input_shape = (self.args.sequence_length//self.args.sample_every_n_frames, self.args.resolution,
-                       self.args.resolution)
-        return tuple([s // d for s, d in zip(input_shape,
-                                             self.args.downsample)])
 
     def encode(self, x, include_embeddings=False, quantize=True):
         h = self.pre_vq_conv(self.encoder(x))
@@ -148,7 +139,7 @@ class VQGAN(pl.LightningModule):
             g_video_loss = -torch.mean(logits_video_fake)
             g_loss = self.image_gan_weight*g_image_loss + self.video_gan_weight*g_video_loss
             disc_factor = adopt_weight(
-                self.global_step, threshold=self.args.discriminator_iter_start)
+                self.global_step, threshold=self.cfg.model.discriminator_iter_start)
             aeloss = disc_factor * g_loss
 
             # GAN feature matching loss - tune features such that we get the same prediction result on the discriminator
@@ -204,7 +195,7 @@ class VQGAN(pl.LightningModule):
             d_image_loss = self.disc_loss(logits_image_real, logits_image_fake)
             d_video_loss = self.disc_loss(logits_video_real, logits_video_fake)
             disc_factor = adopt_weight(
-                self.global_step, threshold=self.args.discriminator_iter_start)
+                self.global_step, threshold=self.cfg.model.discriminator_iter_start)
             discloss = disc_factor * \
                 (self.image_gan_weight*d_image_loss +
                  self.video_gan_weight*d_video_loss)
@@ -251,17 +242,16 @@ class VQGAN(pl.LightningModule):
                  vq_output['commitment_loss'], prog_bar=True)
 
     def configure_optimizers(self):
-
-        lr = self.args.lr
+        lr = self.cfg.model.lr
         opt_ae = torch.optim.Adam(list(self.encoder.parameters()) +
                                   list(self.decoder.parameters()) +
                                   list(self.pre_vq_conv.parameters()) +
                                   list(self.post_vq_conv.parameters()) +
                                   list(self.codebook.parameters()),
-                                  lr=self.args.lr, betas=(0.5, 0.9))
+                                  lr=lr, betas=(0.5, 0.9))
         opt_disc = torch.optim.Adam(list(self.image_discriminator.parameters()) +
                                     list(self.video_discriminator.parameters()),
-                                    lr=self.args.lr, betas=(0.5, 0.9))
+                                    lr=lr, betas=(0.5, 0.9))
         return [opt_ae, opt_disc], []
 
     def log_images(self, batch, **kwargs):
@@ -284,38 +274,6 @@ class VQGAN(pl.LightningModule):
         #log['mean_org'] = batch['mean_org']
         #log['std_org'] = batch['std_org']
         return log
-
-    @staticmethod
-    def add_model_specific_args(parent_parser):
-        parser = argparse.ArgumentParser(
-            parents=[parent_parser], add_help=False)
-        parser.add_argument('--embedding_dim', type=int, default=256)
-        parser.add_argument('--n_codes', type=int, default=2048)
-        parser.add_argument('--n_hiddens', type=int, default=240)
-        parser.add_argument('--lr', type=float, default=3e-4)
-        parser.add_argument('--downsample', nargs='+',
-                            type=int, default=(4, 4, 4))
-        parser.add_argument('--disc_channels', type=int, default=64)
-        parser.add_argument('--disc_layers', type=int, default=3)
-        parser.add_argument('--discriminator_iter_start',
-                            type=int, default=50000)
-        parser.add_argument('--disc_loss_type', type=str,
-                            default='hinge', choices=['hinge', 'vanilla'])
-        parser.add_argument('--image_gan_weight', type=float, default=1.0)
-        parser.add_argument('--video_gan_weight', type=float, default=1.0)
-        parser.add_argument('--l1_weight', type=float, default=4.0)
-        parser.add_argument('--gan_feat_weight', type=float, default=0.0)
-        parser.add_argument('--perceptual_weight', type=float, default=0.0)
-        parser.add_argument('--i3d_feat', action='store_true')
-        parser.add_argument('--restart_thres', type=float, default=1.0)
-        parser.add_argument('--no_random_restart', action='store_true')
-        parser.add_argument('--norm_type', type=str,
-                            default='group', choices=['batch', 'group'])
-        parser.add_argument('--padding_type', type=str, default='replicate',
-                            choices=['replicate', 'constant', 'reflect', 'circular'])
-        parser.add_argument('--dataset', type=str, default='MRNet')
-
-        return parser
 
 
 def Normalize(in_channels, norm_type='group'):

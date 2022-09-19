@@ -117,15 +117,3 @@ class BRATSDataset(Dataset):
             1, sp_size, sp_size, sp_size)
 
         return {'data': imageout}
-
-    @staticmethod
-    def add_data_specific_args(parent_parser):
-        parser = argparse.ArgumentParser(
-            parents=[parent_parser], add_help=False)
-        parser.add_argument('--root_dir', type=str,
-                            default='/data/BraTS/BraTS 2020')
-        parser.add_argument('--batch_size', type=int, default=1)
-        parser.add_argument('--num_workers', type=int, default=15)
-        parser.add_argument('--image_channels', type=int, default=1)
-        parser.add_argument('--imgtype', type=str, default='flair')
-        return parser
