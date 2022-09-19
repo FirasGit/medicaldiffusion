@@ -21,7 +21,7 @@ def reformat_label(label):
 
 
 PREPROCESSING_TRANSORMS = tio.Compose([
-    tio.ZNormalization(),
+    tio.RescaleIntensity(out_min_max=(-1, 1)),
     tio.CropOrPad(target_shape=(256, 256, 32))
 ])
 
@@ -134,4 +134,4 @@ class MRNetDataset(Dataset):
 
         data = array[self.plane]
         data_org = array_org[self.plane]
-        return {'data': data, 'mean_org': data_org.mean(), 'std_org': data_org.std()}
+        return {'data': data}
