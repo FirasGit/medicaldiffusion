@@ -133,5 +133,4 @@ class MRNetDataset(Dataset):
         id = self.paths[index][plane].split('/')[-1].split('.')[0]
 
         data = array[self.plane]
-        data_org = array_org[self.plane]
         return {'data': data}
