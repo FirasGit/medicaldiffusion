@@ -1,12 +1,18 @@
-vqgan_ckpt: /data/home/firas/Desktop/work/other_groups/vq_gan_3d/checkpoints_generation/knee_mri_gen/lightning_logs/version_0/checkpoints/epoch=245-step=222000-train/recon_loss=0.81.ckpt
+vqgan_ckpt: ??? 
+
+# Have to be derived from VQ-GAN Latent space dimensions
+diffusion_img_size: ???
+diffusion_depth_size: ???
+diffusion_num_channels: ???
+dim_mults: ???
+results_folder: /data/home/firas/Desktop/work/other_groups/medicaldiffusion/checkpoints/ddpm/
+results_folder_postfix: 
+load_milestone: False
+
 batch_size: 40
 num_workers: 30
-load_milestone: False
 logger: wandb
 objective: pred_x0
-diffusion_img_size: 32
-diffusion_depth_size: 4
-diffusion_num_channels: 8
 save_and_sample_every: 400
 train_lr: 1e-4
 timesteps: 300 # number of steps
@@ -17,11 +23,5 @@ gradient_accumulate_every: 2 # gradient accumulation steps
 ema_decay: 0.995 # exponential moving average decay
 amp: False # turn on mixed precision
 num_sample_rows: 1
-dim_muls: [1, 2, 4, 8]
-
-
-# Has to be derived from VQ-GAN Latent Space
-diffusion_img_size: 32
-diffusion_depth_size: 4
-diffusion_num_channels: 8
+gpus: 0
 

@@ -4,18 +4,25 @@ from dataset import MRNetDataset, BRATSDataset
 import argparse
 import wandb
 import hydra
-from omegaconf import DictConfig, OmegaConf
-from train.dataset import get_dataset
+from omegaconf import DictConfig, OmegaConf, open_dict
+from train.get_dataset import get_dataset
+import torch
+import os
 
 
 # NCCL_P2P_DISABLE=1 accelerate launch train/train_ddpm.py
 
-@hydra.main(config_path='../config', config_name='base_cfg')
+@hydra.main(config_path='../config', config_name='base_cfg', version_base=None)
 def run(cfg: DictConfig):
+    torch.cuda.set_device(cfg.model.gpus)
+    with open_dict(cfg):
+        cfg.model.results_folder = os.path.join(
+            cfg.model.results_folder, cfg.dataset.name, cfg.model.results_folder_postfix)
+
     model = Unet3D(
-        dim=cfg.model.unet.diffusion_img_size,
-        dim_mults=cfg.model.unet.dim_mults,
-        channels=cfg.model.unet.diffusion_num_channels,
+        dim=cfg.model.diffusion_img_size,
+        dim_mults=cfg.model.dim_mults,
+        channels=cfg.model.diffusion_num_channels,
     ).cuda()
 
     diffusion = GaussianDiffusion(
@@ -44,6 +51,7 @@ def run(cfg: DictConfig):
         ema_decay=cfg.model.ema_decay,
         amp=cfg.model.amp,
         num_sample_rows=cfg.model.num_sample_rows,
+        results_folder=cfg.model.results_folder,
         # logger=cfg.model.logger
     )
 
