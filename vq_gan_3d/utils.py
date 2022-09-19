@@ -1,5 +1,7 @@
+""" Adapted from https://github.com/SongweiGe/TATS"""
 # Copyright (c) Meta Platforms, Inc. All Rights Reserved
 
+import warnings
 import torch
 import imageio
 
@@ -10,6 +12,10 @@ import skvideo.io
 import sys
 import pdb as pdb_original
 import SimpleITK as sitk
+import logging
+
+import imageio.core.util
+logging.getLogger("imageio_ffmpeg").setLevel(logging.ERROR)
 
 
 class ForkedPdb(pdb_original.Pdb):
@@ -134,7 +140,7 @@ def save_video_grid(video, fname, nrow=None, fps=6):
         video.append(video_grid[i])
     imageio.mimsave(fname, video, fps=fps)
     ## skvideo.io.vwrite(fname, video_grid, inputdict={'-r': '5'})
-    print('saved videos to', fname)
+    #print('saved videos to', fname)
 
 
 def comp_getattr(args, attr_name, default=None):

@@ -27,7 +27,7 @@ class ImageLogger(Callback):
     def log_local(self, save_dir, split, images,
                   global_step, current_epoch, batch_idx):
         root = os.path.join(save_dir, "images", split)
-        print(root)
+        # print(root)
         #mean = images.pop('mean_org')
         #mean = mean[(None,)*3].swapaxes(0, -1)
         #std = images.pop('std_org')
@@ -106,7 +106,7 @@ class VideoLogger(Callback):
     def log_local(self, save_dir, split, videos,
                   global_step, current_epoch, batch_idx):
         root = os.path.join(save_dir, "videos", split)
-        print(root)
+        # print(root)
         #mean = videos.pop('mean_org')
         #mean = mean[(None,)*4].swapaxes(0, -1)
         #std = videos.pop('std_org')

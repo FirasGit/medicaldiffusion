@@ -1,4 +1,4 @@
-from dataset import *
+from dataset import MRNetDataset, BRATSDataset
 from torch.utils.data import WeightedRandomSampler
 
 
@@ -13,9 +13,9 @@ def get_dataset(cfg):
         return train_dataset, val_dataset, sampler
     if cfg.dataset.name == 'BRATS':
         train_dataset = BRATSDataset(
-            root_dir=cfg.dataset.root_dir, img_type=cfg.dataset.img_type, train=True)
+            root_dir=cfg.dataset.root_dir, imgtype=cfg.dataset.imgtype, train=True)
         val_dataset = BRATSDataset(
-            root_dir=cfg.dataset.root_dir, img_type=cfg.dataset.img_type, train=False)
+            root_dir=cfg.dataset.root_dir, imgtype=cfg.dataset.imgtype, train=False)
         sampler = None
         return train_dataset, val_dataset, sampler
     if cfg.dataset.name == 'ADNI':

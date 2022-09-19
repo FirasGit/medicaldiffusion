@@ -8,6 +8,7 @@ default_root_dir: /data/home/firas/Desktop/work/other_groups/medicaldiffusion/ch
 default_root_dir_postfix: 
 resume_from_checkpoint:
 max_steps: -1
+max_epochs: -1
 precision: 16
 gradient_clip_val: 1.0
 

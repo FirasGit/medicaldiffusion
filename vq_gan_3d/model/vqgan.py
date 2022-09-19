@@ -1,3 +1,4 @@
+"""Adapted from https://github.com/SongweiGe/TATS"""
 # Copyright (c) Meta Platforms, Inc. All Rights Reserved
 
 import math

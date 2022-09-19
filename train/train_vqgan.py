@@ -1,19 +1,18 @@
+"Adapted from https://github.com/SongweiGe/TATS"
+
 import os
-import argparse
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
-from torch.utils.data import DataLoader, WeightedRandomSampler
-import torch
+from torch.utils.data import DataLoader
 from ddpm.diffusion import default
 from vq_gan_3d.model import VQGAN
-from dataset import MRNetDataset, BRATSDataset, ADNIDataset
 from train.callbacks import ImageLogger, VideoLogger
-from train.dataset import get_dataset
+from train.get_dataset import get_dataset
 import hydra
 from omegaconf import DictConfig, open_dict
 
 
-@hydra.main(config_path='../config', config_name='base_cfg')
+@hydra.main(config_path='../config', config_name='base_cfg', version_base=None)
 def run(cfg: DictConfig):
     pl.seed_everything(cfg.model.seed)
 
@@ -81,6 +80,7 @@ def run(cfg: DictConfig):
         resume_from_checkpoint=cfg.model.resume_from_checkpoint,
         callbacks=callbacks,
         max_steps=cfg.model.max_steps,
+        max_epochs=cfg.model.max_epochs,
         precision=cfg.model.precision,
         gradient_clip_val=cfg.model.gradient_clip_val,
         accelerator=accelerator,
