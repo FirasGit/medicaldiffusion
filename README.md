@@ -23,6 +23,9 @@ python train/train_ddpm.py model=ddpm dataset=brats model.results_folder_postfix
 ```
 Where you again need to specify the path to the VQ-GAN checkpoint from before (e.g. ```model.vqgan_ckpt='/home/<user>/Desktop/medicaldiffusion/checkpoints/vq_gan/BRATS/flair/lightning_logs/version_0/checkpoints/latest_checkpoint.ckpt'```)
 
+## Training on your own dataset
+To train the model on your own dataset
+
 
 ## Inference
 To run inference on the trained model...
