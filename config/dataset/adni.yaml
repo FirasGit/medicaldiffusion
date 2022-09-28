@@ -1,0 +1,4 @@
+name: ADNI
+root_dir: /data/ADNI/ADNI/
+image_channels: 1
+augmentation: True

@@ -1,0 +1,4 @@
+name: LIDC
+root_dir: /data/LIDC/preprocessed/
+image_channels: 1
+augmentation: True

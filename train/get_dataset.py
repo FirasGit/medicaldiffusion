@@ -1,4 +1,4 @@
-from dataset import MRNetDataset, BRATSDataset
+from dataset import MRNetDataset, BRATSDataset, ADNIDataset, DUKEDataset, LIDCDataset
 from torch.utils.data import WeightedRandomSampler
 
 
@@ -19,5 +19,24 @@ def get_dataset(cfg):
         sampler = None
         return train_dataset, val_dataset, sampler
     if cfg.dataset.name == 'ADNI':
-        raise NotImplementedError
+        train_dataset = ADNIDataset(
+            root_dir=cfg.dataset.root_dir, augmentation=True)
+        val_dataset = ADNIDataset(
+            root_dir=cfg.dataset.root_dir, augmentation=True)
+        sampler = None
+        return train_dataset, val_dataset, sampler
+    if cfg.dataset.name == 'DUKE':
+        train_dataset = DUKEDataset(
+            root_dir=cfg.dataset.root_dir)
+        val_dataset = DUKEDataset(
+            root_dir=cfg.dataset.root_dir)
+        sampler = None
+        return train_dataset, val_dataset, sampler
+    if cfg.dataset.name == 'LIDC':
+        train_dataset = LIDCDataset(
+            root_dir=cfg.dataset.root_dir, augmentation=True)
+        val_dataset = LIDCDataset(
+            root_dir=cfg.dataset.root_dir, augmentation=True)
+        sampler = None
+        return train_dataset, val_dataset, sampler
     raise ValueError(f'{cfg.dataset.name} Dataset is not available')

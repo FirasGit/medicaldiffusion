@@ -1,0 +1,3 @@
+name: DUKE
+root_dir: /data/DUKE/
+image_channels: 1

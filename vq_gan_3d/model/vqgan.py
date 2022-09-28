@@ -51,9 +51,11 @@ class VQGAN(pl.LightningModule):
         self.n_codes = cfg.model.n_codes
 
         self.encoder = Encoder(cfg.model.n_hiddens, cfg.model.downsample,
-                               cfg.dataset.image_channels, cfg.model.norm_type, cfg.model.padding_type)
+                               cfg.dataset.image_channels, cfg.model.norm_type, cfg.model.padding_type,
+                               cfg.model.num_groups,
+                               )
         self.decoder = Decoder(
-            cfg.model.n_hiddens, cfg.model.downsample, cfg.dataset.image_channels, cfg.model.norm_type)
+            cfg.model.n_hiddens, cfg.model.downsample, cfg.dataset.image_channels, cfg.model.norm_type, cfg.model.num_groups)
         self.enc_out_ch = self.encoder.out_channels
         self.pre_vq_conv = SamePadConv3d(
             self.enc_out_ch, cfg.model.embedding_dim, 1, padding_type=cfg.model.padding_type)
@@ -277,17 +279,17 @@ class VQGAN(pl.LightningModule):
         return log
 
 
-def Normalize(in_channels, norm_type='group'):
+def Normalize(in_channels, norm_type='group', num_groups=32):
     assert norm_type in ['group', 'batch']
     if norm_type == 'group':
         # TODO Changed num_groups from 32 to 8
-        return torch.nn.GroupNorm(num_groups=32, num_channels=in_channels, eps=1e-6, affine=True)
+        return torch.nn.GroupNorm(num_groups=num_groups, num_channels=in_channels, eps=1e-6, affine=True)
     elif norm_type == 'batch':
         return torch.nn.SyncBatchNorm(in_channels)
 
 
 class Encoder(nn.Module):
-    def __init__(self, n_hiddens, downsample, image_channel=3, norm_type='group', padding_type='replicate'):
+    def __init__(self, n_hiddens, downsample, image_channel=3, norm_type='group', padding_type='replicate', num_groups=32):
         super().__init__()
         n_times_downsample = np.array([int(math.log2(d)) for d in downsample])
         self.conv_blocks = nn.ModuleList()
@@ -304,12 +306,12 @@ class Encoder(nn.Module):
             block.down = SamePadConv3d(
                 in_channels, out_channels, 4, stride=stride, padding_type=padding_type)
             block.res = ResBlock(
-                out_channels, out_channels, norm_type=norm_type)
+                out_channels, out_channels, norm_type=norm_type, num_groups=num_groups)
             self.conv_blocks.append(block)
             n_times_downsample -= 1
 
         self.final_block = nn.Sequential(
-            Normalize(out_channels, norm_type),
+            Normalize(out_channels, norm_type, num_groups=num_groups),
             SiLU()
         )
 
@@ -325,7 +327,7 @@ class Encoder(nn.Module):
 
 
 class Decoder(nn.Module):
-    def __init__(self, n_hiddens, upsample, image_channel, norm_type='group'):
+    def __init__(self, n_hiddens, upsample, image_channel, norm_type='group', num_groups=32):
         super().__init__()
 
         n_times_upsample = np.array([int(math.log2(d)) for d in upsample])
@@ -333,7 +335,7 @@ class Decoder(nn.Module):
 
         in_channels = n_hiddens*2**max_us
         self.final_block = nn.Sequential(
-            Normalize(in_channels, norm_type),
+            Normalize(in_channels, norm_type, num_groups=num_groups),
             SiLU()
         )
 
@@ -346,9 +348,9 @@ class Decoder(nn.Module):
             block.up = SamePadConvTranspose3d(
                 in_channels, out_channels, 4, stride=us)
             block.res1 = ResBlock(
-                out_channels, out_channels, norm_type=norm_type)
+                out_channels, out_channels, norm_type=norm_type, num_groups=num_groups)
             block.res2 = ResBlock(
-                out_channels, out_channels, norm_type=norm_type)
+                out_channels, out_channels, norm_type=norm_type, num_groups=num_groups)
             self.conv_blocks.append(block)
             n_times_upsample -= 1
 
@@ -366,18 +368,18 @@ class Decoder(nn.Module):
 
 
 class ResBlock(nn.Module):
-    def __init__(self, in_channels, out_channels=None, conv_shortcut=False, dropout=0.0, norm_type='group', padding_type='replicate'):
+    def __init__(self, in_channels, out_channels=None, conv_shortcut=False, dropout=0.0, norm_type='group', padding_type='replicate', num_groups=32):
         super().__init__()
         self.in_channels = in_channels
         out_channels = in_channels if out_channels is None else out_channels
         self.out_channels = out_channels
         self.use_conv_shortcut = conv_shortcut
 
-        self.norm1 = Normalize(in_channels, norm_type)
+        self.norm1 = Normalize(in_channels, norm_type, num_groups=num_groups)
         self.conv1 = SamePadConv3d(
             in_channels, out_channels, kernel_size=3, padding_type=padding_type)
         self.dropout = torch.nn.Dropout(dropout)
-        self.norm2 = Normalize(in_channels, norm_type)
+        self.norm2 = Normalize(in_channels, norm_type, num_groups=num_groups)
         self.conv2 = SamePadConv3d(
             out_channels, out_channels, kernel_size=3, padding_type=padding_type)
         if self.in_channels != self.out_channels:
