@@ -8,6 +8,7 @@ from omegaconf import DictConfig, OmegaConf, open_dict
 from train.get_dataset import get_dataset
 import torch
 import os
+from ddpm.unet import UNet
 
 
 # NCCL_P2P_DISABLE=1 accelerate launch train/train_ddpm.py
@@ -19,11 +20,20 @@ def run(cfg: DictConfig):
         cfg.model.results_folder = os.path.join(
             cfg.model.results_folder, cfg.dataset.name, cfg.model.results_folder_postfix)
 
-    model = Unet3D(
-        dim=cfg.model.diffusion_img_size,
-        dim_mults=cfg.model.dim_mults,
-        channels=cfg.model.diffusion_num_channels,
-    ).cuda()
+    if cfg.model.denoising_fn == 'Unet3D':
+        model = Unet3D(
+            dim=cfg.model.diffusion_img_size,
+            dim_mults=cfg.model.dim_mults,
+            channels=cfg.model.diffusion_num_channels,
+        ).cuda()
+    elif cfg.model.denoising_fn == 'UNet':
+        model = UNet(
+            in_ch=cfg.model.diffusion_num_channels,
+            out_ch=cfg.model.diffusion_num_channels,
+            spatial_dims=3
+        ).cuda()
+    else:
+        raise ValueError(f"Model {cfg.model.denoising_fn} doesn't exist")
 
     diffusion = GaussianDiffusion(
         model,
@@ -52,6 +62,7 @@ def run(cfg: DictConfig):
         amp=cfg.model.amp,
         num_sample_rows=cfg.model.num_sample_rows,
         results_folder=cfg.model.results_folder,
+        num_workers=cfg.model.num_workers,
         # logger=cfg.model.logger
     )
 

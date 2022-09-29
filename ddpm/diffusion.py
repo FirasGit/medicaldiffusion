@@ -975,7 +975,8 @@ class Trainer(object):
         save_and_sample_every=1000,
         results_folder='./results',
         num_sample_rows=1,
-        max_grad_norm=None
+        max_grad_norm=None,
+        num_workers=20,
     ):
         super().__init__()
         self.model = diffusion_model
@@ -1003,7 +1004,7 @@ class Trainer(object):
             self.ds = Dataset(folder, image_size,
                               channels=channels, num_frames=num_frames)
         dl = DataLoader(self.ds, batch_size=train_batch_size,
-                        shuffle=True, pin_memory=True, num_workers=20)
+                        shuffle=True, pin_memory=True, num_workers=num_workers)
 
         self.len_dataloader = len(dl)
         self.dl = cycle(dl)
@@ -1044,7 +1045,7 @@ class Trainer(object):
         }
         torch.save(data, str(self.results_folder / f'model-{milestone}.pt'))
 
-    def load(self, milestone, **kwargs):
+    def load(self, milestone, map_location=None, **kwargs):
         if milestone == -1:
             all_milestones = [int(p.stem.split('-')[-1])
                               for p in Path(self.results_folder).glob('**/*.pt')]
@@ -1052,7 +1053,10 @@ class Trainer(object):
                 all_milestones) > 0, 'need to have at least one milestone to load from latest checkpoint (milestone == -1)'
             milestone = max(all_milestones)
 
-        data = torch.load(milestone)
+        if map_location:
+            data = torch.load(milestone, map_location=map_location)
+        else:
+            data = torch.load(milestone)
 
         self.step = data['step']
         self.model.load_state_dict(data['model'], **kwargs)

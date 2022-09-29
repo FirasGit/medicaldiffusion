@@ -11,6 +11,7 @@ from nilearn import surface
 import nibabel as nib
 import argparse
 import glob
+import torchio as tio
 
 
 class ADNIDataset(Dataset):
@@ -23,6 +24,28 @@ class ADNIDataset(Dataset):
     def __len__(self):
         return len(self.file_names)
 
+    def roi_crop(self, image):
+        image = image[:, :, :, 0]
+        # Mask of non-black pixels (assuming image has a single channel).
+        mask = image > 0
+
+        # Coordinates of non-black pixels.
+        coords = np.argwhere(mask)
+
+        # Bounding box of non-black pixels.
+        x0, y0, z0 = coords.min(axis=0)
+        x1, y1, z1 = coords.max(axis=0) + 1   # slices are exclusive at the top
+
+        # Get the contents of the bounding box.
+        cropped = image[x0:x1, y0:y1, z0:z1]
+
+        padded_crop = tio.CropOrPad(
+            np.max(cropped.shape))(cropped.copy()[None])
+
+        padded_crop = np.transpose(padded_crop, (1, 2, 3, 0))
+
+        return padded_crop
+
     def __getitem__(self, index):
         path = self.file_names[index]
         img = nib.load(path)
@@ -30,6 +53,7 @@ class ADNIDataset(Dataset):
         img = np.swapaxes(img.get_data(), 1, 2)
         img = np.flip(img, 1)
         img = np.flip(img, 2)
+        img = self.roi_crop(image=img)
         sp_size = 64
         img = resize(img, (sp_size, sp_size, sp_size), mode='constant')
         if self.augmentation:

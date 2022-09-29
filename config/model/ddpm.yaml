@@ -14,6 +14,7 @@ num_workers: 20
 logger: wandb
 objective: pred_x0
 save_and_sample_every: 1000
+denoising_fn: Unet3D
 train_lr: 1e-4
 timesteps: 300 # number of steps
 sampling_timesteps: 250 # number of sampling timesteps (using ddim for faster inference [see citation for ddim paper])
