@@ -2,6 +2,8 @@
 
 This repository contains the code to our paper "Medical Diffusion: Denoising Diffusion Probabilistic Models for 3D Medical Image Synthesis"
 
+![alt text](assets/main.png)
+
 ## Datasets
 In order to train on the datasets used in our paper, first download the corresponding from their respective website.
 Note - For this dataset, we cropped and resampled the images to
