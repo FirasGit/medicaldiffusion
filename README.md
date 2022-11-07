@@ -4,10 +4,6 @@ This repository contains the code to our paper "Medical Diffusion: Denoising Dif
 
 ![alt text](assets/main.png)
 
-## Datasets
-In order to train on the datasets used in our paper, first download the corresponding from their respective website.
-Note - For this dataset, we cropped and resampled the images to
-
 ## Training
 In order to run our model, we suggest you create a virtual environment ```conda create -n medicaldiffusion python=3.8``` and activate it with ```conda activate medicaldiffusion```. Subsequently, download and install the required libraries by running ```pip install -r requirements.txt```
 
@@ -25,16 +21,6 @@ python train/train_ddpm.py model=ddpm dataset=brats model.results_folder_postfix
 ```
 Where you again need to specify the path to the VQ-GAN checkpoint from before (e.g. ```model.vqgan_ckpt='/home/<user>/Desktop/medicaldiffusion/checkpoints/vq_gan/BRATS/flair/lightning_logs/version_0/checkpoints/latest_checkpoint.ckpt'```)
 
-## Training on your own dataset
-To train the model on your own dataset
-
-
-## Inference
-To run inference on the trained model...
-
-
-## Evaluate
-To compare to the trained GANs...
 
 
 ## Acknowledgement
