@@ -1,4 +1,4 @@
-from dataset import MRNetDataset, BRATSDataset, ADNIDataset, DUKEDataset, LIDCDataset
+from dataset import MRNetDataset, BRATSDataset, ADNIDataset, DUKEDataset, LIDCDataset, DEFAULTDataset
 from torch.utils.data import WeightedRandomSampler
 
 
@@ -13,9 +13,9 @@ def get_dataset(cfg):
         return train_dataset, val_dataset, sampler
     if cfg.dataset.name == 'BRATS':
         train_dataset = BRATSDataset(
-            root_dir=cfg.dataset.root_dir, imgtype=cfg.dataset.imgtype, train=True)
+            root_dir=cfg.dataset.root_dir, imgtype=cfg.dataset.imgtype, train=True, severity=cfg.dataset.severity, resize=cfg.dataset.resize)
         val_dataset = BRATSDataset(
-            root_dir=cfg.dataset.root_dir, imgtype=cfg.dataset.imgtype, train=False)
+            root_dir=cfg.dataset.root_dir, imgtype=cfg.dataset.imgtype, train=True, severity=cfg.dataset.severity, resize=cfg.dataset.resize)
         sampler = None
         return train_dataset, val_dataset, sampler
     if cfg.dataset.name == 'ADNI':
@@ -39,4 +39,10 @@ def get_dataset(cfg):
             root_dir=cfg.dataset.root_dir, augmentation=True)
         sampler = None
         return train_dataset, val_dataset, sampler
+    if cfg.dataset.name == 'DEFAULT':
+        train_dataset = DEFAULTDataset(
+            root_dir=cfg.dataset.root_dir)
+        val_dataset = DEFAULTDataset(
+            root_dir=cfg.dataset.root_dir)
+        sampler = None
     raise ValueError(f'{cfg.dataset.name} Dataset is not available')
