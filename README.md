@@ -1,6 +1,7 @@
 # Medical Diffusion
 
-This repository contains the code to our paper "Medical Diffusion: Denoising Diffusion Probabilistic Models for 3D Medical Image Synthesis".
+This repository contains the code to our paper "Medical Diffusion: Denoising Diffusion Probabilistic Models for 3D Medical Image Synthesis"
+(see https://arxiv.org/abs/2211.03364).
 
 ![Generated Samples by our Medical Diffusion model](assets/generated_samples.gif)
 
@@ -40,7 +41,7 @@ Where you again need to specify the path to the VQ-GAN checkpoint from before (e
 # Train on your own dataset
 To simpify the dataloading for your own dataset, we provide a default dataset that simply requires the path to the folder with your NifTI images inside, i.e.
 
-    root_dir/							# Path to the folder that contains the images
+    root_dir/					# Path to the folder that contains the images
     ├── img1.nii                # The name of the NifTI file is not important
     ├── img2.nii                    
     ├── img3.nii                     
