@@ -2,7 +2,6 @@
 
 import os
 import sys
-sys.path.append(os.path.split(os.getcwd())[0])
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from torch.utils.data import DataLoader
