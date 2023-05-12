@@ -1,6 +1,8 @@
 "Adapted from https://github.com/SongweiGe/TATS"
 
 import os
+import sys
+sys.path.append('/Users/dmnk/Documents/GitHub/segmentation_diffusion/medicaldiffusion')
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from torch.utils.data import DataLoader

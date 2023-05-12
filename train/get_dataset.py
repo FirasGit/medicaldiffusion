@@ -45,4 +45,5 @@ def get_dataset(cfg):
         val_dataset = DEFAULTDataset(
             root_dir=cfg.dataset.root_dir)
         sampler = None
+        return train_dataset, val_dataset, sampler
     raise ValueError(f'{cfg.dataset.name} Dataset is not available')

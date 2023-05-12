@@ -26,7 +26,7 @@ class DEFAULTDataset(Dataset):
     def get_data_files(self):
         nifti_file_names = os.listdir(self.root_dir)
         folder_names = [os.path.join(
-            self.root_dir, nifti_file_name) for nifti_file_name in nifti_file_names if nifti_file_names.endsiwth('.nii')]
+            self.root_dir, nifti_file_name) for nifti_file_name in nifti_file_names if nifti_file_names.endswith('.nii')]
         return folder_names
 
     def __len__(self):
